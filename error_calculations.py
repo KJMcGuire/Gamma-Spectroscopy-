@@ -6,7 +6,6 @@ import scipy as sp
 
 
 
-
 #Calculate errors for Channel No. vs. Energy linear fit
 def Sigma_y(A, B, x, y):
     sum = 0.0
@@ -54,10 +53,12 @@ def res(sigma, E):
 #        print res
 #        resolutions.fill(res())
         sum += res
-    print (sum/ [len(calibration.energy_calibration1[0])])
+    return (sum/ [len(calibration.energy_calibration1[0])])
 
 
-#print res(calibration.energy_calibration1[0], calibration.energies)
+resolution = res(calibration.energy_calibration1[0], calibration.energies)
+
+print "Detector resolution = {resolution}".format(resolution=resolution)
 
 ###Calculate error on detector resolution
 def res_error(sigma_vars, sig_m, E):
@@ -66,7 +67,37 @@ def res_error(sigma_vars, sig_m, E):
         sum += np.sqrt( ((200*calibration.m* np.sqrt(sigma_vars[0][i][0]) )/E[i])**2 + ( (200*calibration.energy_calibration1[0][i]* sigma_m)/E[i])**2 )
 #        print sum
     return (sum/ len(calibration.energies) )
-
 resolution_error =  res_error(calibration.sigma_variances, sigma_m, calibration.energies)
+print "Detector resolution error = {resolution_error}".format(resolution_error=resolution_error)
 
-print resolution_error
+
+###Find the average of the channel No. values
+def avg_x(x):
+    sum = 0.0
+    for i in range ( len(calibration.energy_calibration1[1]) ):
+        sum+= x[i]
+    return( sum / len(calibration.energy_calibration1[1]))
+
+
+channel_avg = avg_x(calibration.energy_calibration1[1])
+#print "The channel avg is {channel_avg}".format(channel_avg=channel_avg)
+
+
+
+
+###Use fitting results to find photopeak error plus uncertainty
+
+def Energy(A, B, x):
+    return(B*(x) + A)
+
+def delE(B, x, delA, delB, delx, x0):
+    return ( np.sqrt(delA**2 + ((x-x0)*(delB))**2 + (B*delx)**2 ))
+
+energy_1 = Energy(calibration.b, calibration.m, calibration.unknown_params_1[1])
+energy_2 = Energy(calibration.b, calibration.m, calibration.unknown_params_2[1])
+del_E_1 = delE(calibration.m, calibration.unknown_params_1[1], sigma_b, sigma_m, calibration.unknown_params_1[0], channel_avg)
+del_E_2 = delE(calibration.m, calibration.unknown_params_2[1], sigma_b, sigma_m, calibration.unknown_params_2[0], channel_avg)
+print "Energy of unknown photopeak 1 is {energy_1}".format(energy_1=energy_1)
+print "Energy of unknown photopeak 2 is {energy_2}".format(energy_2=energy_2)
+print "The error for unknown 1 is {del_E_1}".format(del_E_1=del_E_1)
+print "The error for unknown 2 is {del_E_2}".format(del_E_2=del_E_2)
