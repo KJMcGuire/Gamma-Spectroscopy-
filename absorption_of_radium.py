@@ -145,9 +145,9 @@ def mass_attenuation(I, I0, x, rho):
 
 
 mu_7 = mass_attenuation(sum3, sum1, .7, 1)
-mu_1 = mass_attenuation(sum2, sum1, .125, 1)
+mu_1 = mass_attenuation(sum2, sum1, .15, 1)
 mu_rho_7mm = mass_attenuation(sum3, sum1, .7, 11.34)
-mu_rho_1mm = mass_attenuation(sum2, sum1, .125, 11.34)
+mu_rho_1mm = mass_attenuation(sum2, sum1, .15, 11.34)
 print "The attenuation coefficient of lead w/ 7mm absorber is {0:.5}".format(mu_7)
 print "The attenuation coefficient of lead w/ 1mm absorber is {0:.5}".format(mu_1)
 print "The mass attenuation coefficient of lead w/ 7mm absorber is {0:.5}".format(mu_rho_7mm)
@@ -163,8 +163,8 @@ def del_mu_rho(I, I0, x, dI, dI0, dx, rho):
 delta_mu_7mm = del_mu_rho(sum3, sum1, .7, count_uncertainty_3, count_uncertainty_1, 0.05, 11.35)
 print "The uncertainty in mass attenuation coeff. from 7mm absorber = {delta_mu_7mm}".format(delta_mu_7mm=delta_mu_7mm)
 
-delta_mu_1mm = del_mu_rho(sum2, sum1, .125, count_uncertainty_2, count_uncertainty_1, 0.05, 11.35)
-print "The uncertainty in mass attenuation coeff. from 1mm absorber = {delta_mu_1mm}".format(delta_mu_1mm=delta_mu_1mm)
+delta_mu_1mm = del_mu_rho(sum2, sum1, .15, count_uncertainty_2, count_uncertainty_1, 0.03, 11.35)
+print "The uncertainty in mass attenuation coeff. from 1.5mm absorber = {delta_mu_1mm}".format(delta_mu_1mm=delta_mu_1mm)
 
 
 ###Plot 609keV photopeaks with fits and count no.
@@ -173,7 +173,7 @@ plt.figure(figsize=(10,7))
 #plt.plot(x, -0.35*x0 + 175)
 plt.plot(x, Radium_clean, label="Unattenuated ($\\tilde{\chi}^{2}$ = 3.9)", color = '#ff474c')
 plt.plot(x, gaussian(x0, *ra_params1), color = '#ff474c', linestyle = '-.')
-plt.plot(x, Radium_1mm_lead_clean, color = '#2c6fbb', label="1.25 mm attenuator ($\\tilde{\chi}^{2}$ = 3.4)" )
+plt.plot(x, Radium_1mm_lead_clean, color = '#2c6fbb', label="1.5 mm attenuator ($\\tilde{\chi}^{2}$ = 3.4)" )
 plt.plot(x, gaussian(x0,  *ra_params2), color = '#2c6fbb', linestyle = '-.')
 plt.plot(x, Radium_7mm_lead_clean, color = '#fec615', label="7 mm attenuator ($\\tilde{\chi}^{2}$ = 1.8)")
 plt.plot(x, gaussian(x0,  *ra_params3), color = '#fec615', linestyle = '-.')
@@ -191,8 +191,38 @@ plt.savefig("Lead_attenuated_radium.png", bbox_inches="tight", pad_inches=0)
 #plt.show()
 
 
+lead_thicknesses = [1.60, 1.44, 1.40, 1.45, 1.50, 1.50, 1.45, 1.40, 1.43, 1.73, 1.60, 1.48, 1.47, 1.64, 1.46, 1.60, 1.45, 1.60, 1.32, 1.35, 1.43, 1.50, 1.55]
+
+sum_4 = 0
+for i in range( len(lead_thicknesses)):
+    sum_4 += lead_thicknesses[i]
+
+mean = sum_4/len(lead_thicknesses)
+print "The average of lead attenuator measurements is = {mean} ".format(mean=mean)
+
+
 
 """
+x_t = np.linspace(1.23, 1.73, 51)
+y_t = [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 3, 0, 0, 2, 1, 3, 1, 1, 1, 0, 3, 0, 0, 0,
+0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+
+t_params, t_param_covar = curve_fit(exponential, x_t, y_t, p0 = [1, 1])
+
+
+plt.figure(figsize=(10,7))
+plt.plot(x_t, exponential(x_t, *t_params), label = "")
+plt.scatter(x_t, y_t, color = '#2c6fbb')
+plt.ylabel("$\mu$/$\\rho$ (cm$^{2}$/g)")
+plt.xlabel("Attenuator Thicknesses")
+plt.xlim([1.2,1.75])
+plt.ylim([0, 5])
+#plt.legend(loc=1, prop={'size': 15})
+#plt.savefig(".png", bbox_inches="tight", pad_inches=0)
+plt.show()
+
+
+
 ###Fit the NIST data for mass attenuation coefficient to an exponential
 ###Define an exponential
 def exponential(x, A, b):
